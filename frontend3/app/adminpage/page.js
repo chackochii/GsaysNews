@@ -239,12 +239,13 @@ export default function AdminPage() {
           </button>
 
           {editId && (
-            <button
+           <button
               type="button"
               onClick={resetForm}
-              className="ml-4 text-sm text-gray-500 hover:text-red-500"
+              className={`mt-4 w-full sm:w-auto px-8 py-3 rounded-xl text-white bg-red-500 font-bold text-lg uppercase transition-all duration-300 transform flex items-center justify-center gap-2 hover:scale-105
+              `}
             >
-              Cancel Edit
+              Cancel Editing <br></br>
             </button>
           )}
         </form>
