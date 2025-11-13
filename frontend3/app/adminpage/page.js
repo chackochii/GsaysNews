@@ -1,0 +1,285 @@
+'use client';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Toaster, toast } from 'react-hot-toast';
+import Footer from '../components/footer';
+import AdminTopBar from '../components/adminTopBar';
+
+export default function AdminPage() {
+  const [formData, setFormData] = useState({
+    category: 'News',
+    title: '',
+    author: '',
+    date: '',
+    article: '',
+  });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [articles, setArticles] = useState([]); // 🔹 List of news
+  const [editId, setEditId] = useState(null); // 🔹 Track edit mode
+
+  const categories = [
+    'News',
+    'Fashion',
+    'Gadgets',
+    'Lifestyle',
+    'Trending News',
+    'Advertisement',
+  ];
+
+  // ✅ Fetch all news on mount
+  useEffect(() => {
+    fetchNews();
+  }, []);
+
+  const fetchNews = async () => {
+    try {
+      const res = await axios.get('http://localhost:5010/api/news/all');
+      setArticles(res.data.news || []);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to fetch articles');
+    }
+  };
+
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setSelectedFile(file);
+    setPreview(file ? URL.createObjectURL(file) : null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const data = new FormData();
+      data.append('category', formData.category);
+      data.append('title', formData.title);
+      data.append('author', formData.author);
+      data.append('date', formData.date);
+      data.append('article', formData.article);
+      if (selectedFile) data.append('image', selectedFile);
+
+      const url = editId
+        ? `http://localhost:5010/api/news/edit/${editId}`
+        : `http://localhost:5010/api/news/create`;
+
+      const method = editId ? 'put' : 'post';
+      const res = await axios[method](url, data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      toast.success(editId ? '✅ Article updated successfully!' : '✅ Article added!');
+      resetForm();
+      fetchNews();
+    } catch (error) {
+      console.error(error);
+      toast.error(`Error: ${error?.response?.data?.error || error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({ category: 'News', title: '', author: '', date: '', article: '' });
+    setSelectedFile(null);
+    setPreview(null);
+    setEditId(null);
+  };
+
+  // 🔹 When clicking "Edit" on a news item
+  const handleEdit = (article) => {
+    setFormData({
+      category: article.category,
+      title: article.title,
+      author: article.author,
+      date: article.date ? article.date.split('T')[0] : '',
+      article: article.article,
+    });
+    setPreview(article.imageUrl || null);
+    setEditId(article.id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <AdminTopBar />
+      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+
+      <main className="flex-grow max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
+        <h1 className="text-4xl font-extrabold text-blue-700 dark:text-blue-400 mb-10 text-center">
+          🚀 Admin Panel
+        </h1>
+
+        {/* ====== ADD / EDIT FORM ====== */}
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-8 border border-gray-200 dark:border-gray-700 space-y-6"
+        >
+          <h2 className="text-2xl font-bold text-blue-600 dark:text-blue-300 mb-6 border-b border-blue-200 dark:border-blue-700 pb-3">
+            {editId ? '✏️ Edit Article' : '📰 Add New Article'}
+          </h2>
+
+          {/* Category */}
+          <div>
+            <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+              Category
+            </label>
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              className="w-full border border-blue-400 dark:border-blue-600 bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+            >
+              {categories.map((cat) => (
+                <option key={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Title */}
+          <div>
+            <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+              Title
+            </label>
+            <input
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              placeholder="Enter article title"
+              className="w-full border border-blue-400 dark:border-blue-600 bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          {/* Author & Date */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+                Author
+              </label>
+              <input
+                name="author"
+                value={formData.author}
+                onChange={handleChange}
+                placeholder="Author name"
+                className="w-full border border-blue-400 dark:border-blue-600 bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+                Date
+              </label>
+              <input
+                type="date"
+                name="date"
+                value={formData.date}
+                onChange={handleChange}
+                className="w-full border border-blue-400 dark:border-blue-600 bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Article */}
+          <div>
+            <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+              Article Content
+            </label>
+            <textarea
+              name="article"
+              value={formData.article}
+              onChange={handleChange}
+              rows="6"
+              placeholder="Write full article..."
+              className="w-full border border-blue-400 dark:border-blue-600 bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 resize-none"
+              required
+            />
+          </div>
+
+          {/* Image Upload */}
+          <div>
+            <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+              Upload Image
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="block w-full text-sm text-gray-700 dark:text-gray-300 border border-blue-400 dark:border-blue-600 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:bg-blue-100 dark:file:bg-blue-800 file:text-blue-700 dark:file:text-blue-100 hover:file:bg-blue-200 dark:hover:file:bg-blue-700"
+            />
+            {preview && (
+              <div className="mt-4 p-2 bg-blue-50 dark:bg-gray-700 rounded-lg border border-blue-200 dark:border-gray-600">
+                <img
+                  src={preview}
+                  alt="Preview"
+                  className="rounded-lg max-h-60 object-cover w-full border border-blue-300 dark:border-blue-800"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading || !formData.title || !formData.article}
+            className={`mt-4 w-full sm:w-auto px-8 py-3 rounded-xl text-white font-bold text-lg uppercase transition-all duration-300 transform flex items-center justify-center gap-2 ${
+              loading
+                ? 'bg-blue-400 cursor-not-allowed'
+                : 'bg-gradient-to-r from-blue-600 to-indigo-700 hover:scale-105'
+            }`}
+          >
+            {loading ? 'Saving...' : editId ? 'Update Article' : 'Submit Article'}
+          </button>
+
+          {editId && (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="ml-4 text-sm text-gray-500 hover:text-red-500"
+            >
+              Cancel Edit
+            </button>
+          )}
+        </form>
+
+        {/* ====== MANAGE ARTICLES ====== */}
+        <div className="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700 mt-10">
+          <h3 className="text-xl font-bold text-blue-600 dark:text-blue-300 mb-4 border-b border-blue-200 dark:border-blue-700 pb-2">
+            🛠 Manage Articles
+          </h3>
+
+          {articles.length === 0 ? (
+            <p className="text-gray-500 dark:text-gray-400 text-sm">No articles found.</p>
+          ) : (
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+              {articles.map((a) => (
+                <li key={a.id} className="py-3 flex justify-between items-center">
+                  <div>
+                    <p className="font-semibold text-gray-800 dark:text-gray-100">{a.title}</p>
+                    <p className="text-xs text-gray-500">
+                      {a.category} • {a.author} • {new Date(a.date).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleEdit(a)}
+                    className="text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    ✏️ Edit
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}

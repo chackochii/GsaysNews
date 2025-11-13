@@ -1,0 +1,91 @@
+export const newsData = {
+  trending: [
+    {
+      id: 1,
+      category: "Fashion",
+     title: "ഇന്ത്യ ആഗോള സൂപ്പർ പവർ, ഇസ്രയേലുമായുള്ള ബന്ധം എക്കാലത്തെക്കാളും ശക്തം; മോദി വിളിച്ചത് മറക്കില്ല", 
+      author: "Armin Vans",
+      date: "August 7, 2019",
+      image: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e",
+      content: "In this comprehensive article, we explore the fashion landscape of New York City and showcase the most influential and stylish women who are shaping trends in 2019. From high fashion runways to street style, these women represent the pinnacle of fashion innovation and elegance. Discover how they blend classic sophistication with modern trends, creating a unique aesthetic that inspires millions worldwide. Learn about their fashion philosophies, favorite designers, and the key pieces that define their iconic looks.",
+    },
+    {
+      id: 2,
+      category: "Gadgets",
+      title: "Game Changing Virtual Reality Console Hits the Market",
+      author: "Tech Today",
+      date: "August 6, 2019",
+      image: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2",
+      content: "The latest virtual reality console is revolutionizing gaming and entertainment. This groundbreaking technology combines cutting-edge graphics, immersive sound design, and intuitive controls to create an unparalleled gaming experience. In this article, we dive deep into the features, performance capabilities, and real-world applications of this game-changing console. From stunning visual fidelity to seamless gameplay, discover how this new VR console is setting new standards in the gaming industry.",
+    },
+    
+    {
+      id: 3,
+      category: "Fashion",
+      title: "WordPress News Magazine Charts the Most Chic and Fashionable Women of NYC",
+      author: "Armin Vans",
+      date: "August 7, 2019",
+      image: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e",
+      content: "In this comprehensive article, we explore the fashion landscape of New York City and showcase the most influential and stylish women who are shaping trends in 2019. From high fashion runways to street style, these women represent the pinnacle of fashion innovation and elegance. Discover how they blend classic sophistication with modern trends, creating a unique aesthetic that inspires millions worldwide. Learn about their fashion philosophies, favorite designers, and the key pieces that define their iconic looks.",
+    },
+    {
+      id: 4,
+      category: "Gadgets",
+      title: "Game Changing Virtual Reality Console Hits the Market",
+      author: "Tech Today",
+      date: "August 6, 2019",
+      image: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2",
+      content: "The latest virtual reality console is revolutionizing gaming and entertainment. This groundbreaking technology combines cutting-edge graphics, immersive sound design, and intuitive controls to create an unparalleled gaming experience. In this article, we dive deep into the features, performance capabilities, and real-world applications of this game-changing console. From stunning visual fidelity to seamless gameplay, discover how this new VR console is setting new standards in the gaming industry.",
+    },
+  ],
+  lifestyle: [
+    {
+      id: 1,
+      category: "Travel",
+      title: "ഇന്ത്യ ആഗോള സൂപ്പർ പവർ, ഇസ്രയേലുമായുള്ള ബന്ധം എക്കാലത്തെക്കാളും ശക്തം; മോദി വിളിച്ചത് മറക്കില്ല",
+      author: "Armin Vans",
+      date: "June 19, 2019",
+      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+      content: "Experience the breathtaking beauty of Santorini's most magical sunset. This travel guide takes you through the best vantage points to witness the stunning views as the sun dips below the Mediterranean horizon. Learn about the perfect timing, recommended locations, and insider tips from local travelers. Discover charming villages, local restaurants, and hidden gems that make this destination truly unforgettable.",
+    },
+    {
+      id: 2,
+      category: "Architecture",
+      title: "Now Is the Time to Think About Your Small-Business Success",
+      author: "Armin Vans",
+      date: "June 19, 2019",
+      image: "https://images.unsplash.com/photo-1505691938895-1758d7feb511",
+      content: "Building a successful small business requires careful planning and strategic execution. In this insightful article, we explore key strategies and best practices for entrepreneurs looking to scale their ventures. From financial management to customer acquisition, marketing strategies to team building, discover actionable insights from successful business leaders. Learn how to navigate challenges, build resilience, and create sustainable growth for your business.",
+    },
+    {
+      id: 3,
+      category: "Travel",
+title: "ഇന്ത്യ ആഗോള സൂപ്പർ പവർ, ഇസ്രയേലുമായുള്ള ബന്ധം എക്കാലത്തെക്കാളും ശക്തം; മോദി വിളിച്ചത് മറക്കില്ല",
+      author: "Armin Vans",
+      date: "June 19, 2019",
+      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+      content: "Experience the breathtaking beauty of Santorini's most magical sunset. This travel guide takes you through the best vantage points to witness the stunning views as the sun dips below the Mediterranean horizon. Learn about the perfect timing, recommended locations, and insider tips from local travelers. Discover charming villages, local restaurants, and hidden gems that make this destination truly unforgettable.",
+    },
+    {
+      id: 4,
+      category: "Architecture",
+      title: "Now Is the Time to Think About Your Small-Business Success",
+      author: "Armin Vans",
+      date: "June 19, 2019",
+      image: "https://images.unsplash.com/photo-1505691938895-1758d7feb511",
+      content: "Building a successful small business requires careful planning and strategic execution. In this insightful article, we explore key strategies and best practices for entrepreneurs looking to scale their ventures. From financial management to customer acquisition, marketing strategies to team building, discover actionable insights from successful business leaders. Learn how to navigate challenges, build resilience, and create sustainable growth for your business.",
+    },
+    {
+      id: 5,
+      category: "Travel",
+     title: "ഇന്ത്യ ആഗോള സൂപ്പർ പവർ, ഇസ്രയേലുമായുള്ള ബന്ധം എക്കാലത്തെക്കാളും ശക്തം; മോദി വിളിച്ചത് മറക്കില്ല",
+      author: "Armin Vans",
+      date: "June 19, 2019",
+      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+      content: "Experience the breathtaking beauty of Santorini's most magical sunset. This travel guide takes you through the best vantage points to witness the stunning views as the sun dips below the Mediterranean horizon. Learn about the perfect timing, recommended locations, and insider tips from local travelers. Discover charming villages, local restaurants, and hidden gems that make this destination truly unforgettable.",
+    },
+  ],
+};
+
+
+
