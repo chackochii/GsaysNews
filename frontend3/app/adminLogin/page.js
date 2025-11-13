@@ -15,7 +15,7 @@ export default function AdminLoginPage() {
 
     try {
       // Replace this with your actual backend API
-      const baseUrl = process.env.BE_BASE_URL || 'http://localhost:5010';
+        const baseUrl = process.env.NEXT_PUBLIC_BE_BASE_URL || 'http://localhost:5010';
       const res = await axios.post(`${baseUrl}/api/admin/login`, { email, password });
 
       if (res.status !== 200) throw new Error(res.data.message || 'Login failed');

@@ -19,7 +19,7 @@ const Home = () => {
     lifestyle: [],
     trendingnews: [],
   });
-  const baseUrl = process.env.BE_BASE_URL || 'http://localhost:5010';
+    const baseUrl = process.env.NEXT_PUBLIC_BE_BASE_URL || 'http://localhost:5010';
 
   const fetchCategory = async (category, keyName) => {
     try {

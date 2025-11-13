@@ -18,6 +18,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [articles, setArticles] = useState([]); // 🔹 List of news
   const [editId, setEditId] = useState(null); // 🔹 Track edit mode
+  const baseUrl = process.env.NEXT_PUBLIC_BE_BASE_URL || 'http://localhost:5010';
 
   const categories = [
     'News',
@@ -63,7 +64,6 @@ export default function AdminPage() {
       data.append('date', formData.date);
       data.append('article', formData.article);
       if (selectedFile) data.append('image', selectedFile);
-      const baseUrl = process.env.BE_BASE_URL || 'http://localhost:5010';
 
       const url = editId
         ? `${baseUrl}/api/news/edit/${editId}`
