@@ -118,3 +118,59 @@ export const listNews = async (req, res) => {
 
 
 
+export const addCategory = async (req, res) => {
+  try {
+    const { category } = req.body;
+
+    if (!category || category.trim() === '') {
+      return res.status(400).json({ error: 'Category name is required.' });
+    }
+
+    const existingCategory = await NewsModel.findOne({
+      where: { category: { [Op.iLike]: category.trim() } },
+    });
+
+    if (existingCategory) {
+      return res.status(400).json({ error: 'Category already exists.' });
+    }
+
+    // We can insert an empty record just to store this category
+    // (no article content needed — just store category reference)
+    await NewsModel.create({
+      category: category.trim(),
+      title: 'Category Placeholder',
+      author: 'system',
+      articleContent: 'Category entry placeholder',
+    });
+
+    res.status(201).json({
+      message: '✅ Category added successfully.',
+      category: category.trim(),
+    });
+  } catch (error) {
+    console.error('❌ Error adding category:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// ✅ Get all unique categories from existing News records
+export const getCategories = async (req, res) => {
+  try {
+    const categories = await NewsModel.findAll({
+      attributes: [
+        [NewsModel.sequelize.fn('DISTINCT', NewsModel.sequelize.col('category')), 'category'],
+      ],
+      raw: true,
+    });
+
+    const categoryList = categories.map((c) => c.category);
+
+    res.status(200).json({
+      message: '✅ Categories fetched successfully.',
+      categories: categoryList,
+    });
+  } catch (error) {
+    console.error('❌ Error fetching categories:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
