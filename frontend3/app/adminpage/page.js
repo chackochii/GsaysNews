@@ -35,7 +35,7 @@ export default function AdminPage() {
 
   const fetchNews = async () => {
     try {
-      const res = await axios.get('http://localhost:5010/api/news/all');
+      const res = await axios.get(`${baseUrl}/api/news/all`);
       setArticles(res.data.news || []);
     } catch (error) {
       console.error(error);
@@ -63,10 +63,11 @@ export default function AdminPage() {
       data.append('date', formData.date);
       data.append('article', formData.article);
       if (selectedFile) data.append('image', selectedFile);
+      const baseUrl = process.env.BE_BASE_URL || 'http://localhost:5010';
 
       const url = editId
-        ? `http://localhost:5010/api/news/edit/${editId}`
-        : `http://localhost:5010/api/news/create`;
+        ? `${baseUrl}/api/news/edit/${editId}`
+        : `${baseUrl}/api/news/create`;
 
       const method = editId ? 'put' : 'post';
       const res = await axios[method](url, data, {

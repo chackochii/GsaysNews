@@ -19,10 +19,11 @@ const Home = () => {
     lifestyle: [],
     trendingnews: [],
   });
+  const baseUrl = process.env.BE_BASE_URL || 'http://localhost:5010';
 
   const fetchCategory = async (category, keyName) => {
     try {
-      const response = await axios.get(`http://localhost:5010/api/news/category/${category}`);
+      const response = await axios.get(`${baseUrl}/api/news/category/${category}`);
       if (response.status === 200 && Array.isArray(response.data.news)) {
         setNewsData((prev) => ({
           ...prev,
