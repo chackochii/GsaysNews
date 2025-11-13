@@ -31,12 +31,12 @@ const AdminTopBar = () => {
                         <a href="/admin/dashboard" className="text-gray-300 font-medium pointer-events-none opacity-50">
                             Dashboard
                         </a>
-                        <a href="/admin/users" className="text-gray-300 font-medium pointer-events-none opacity-50">
+                        {/* <a href="/admin/users" className="text-gray-300 font-medium pointer-events-none opacity-50">
                             Users
                         </a>
                         <a href="/admin/settings" className="text-gray-300 font-medium pointer-events-none opacity-50">
                             Settings
-                        </a>
+                        </a> */}
                     </nav>
 
                     {/* Profile Section - Desktop */}
@@ -69,19 +69,18 @@ const AdminTopBar = () => {
                         </svg>
                     </button>
                 </div>
-
                 {/* Mobile Menu */}
                 {isMenuOpen && (
                     <div className="md:hidden pb-4 border-t border-gray-700">
                         <nav className="flex flex-col gap-2 py-4">
                             <a
-                                href="/admin/dashboard"
+                                href="/adminpage"
                                 className="text-gray-300 hover:text-white hover:bg-gray-800 px-4 py-2 rounded transition-colors"
-                                onClick={() => setIsMenuOpen(false)}
+                                onClick={() => setIsMenuOpen(true)}
                             >
                                 Dashboard
                             </a>
-                            <a
+                            {/* <a
                                 href="/admin/users"
                                 className="text-gray-300 hover:text-white hover:bg-gray-800 px-4 py-2 rounded transition-colors"
                                 onClick={() => setIsMenuOpen(false)}
@@ -94,7 +93,7 @@ const AdminTopBar = () => {
                                 onClick={() => setIsMenuOpen(false)}
                             >
                                 Settings
-                            </a>
+                            </a> */}
                         </nav>
                         <div className="border-t border-gray-700 pt-4 flex flex-col gap-3">
                             <div className="flex items-center gap-3 px-4">

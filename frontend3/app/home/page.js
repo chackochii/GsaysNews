@@ -10,45 +10,65 @@ import NewsSection from "../components/newsSection";
 const Home = () => {
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true); // 🔹 Add loader state
+  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState([]); // ✅ store all categories
+  const [newsData, setNewsData] = useState({}); // ✅ dynamic category storage
 
-  const [newsData, setNewsData] = useState({
-    news: [],
-    fashion: [],
-    gadgets: [],
-    lifestyle: [],
-    trendingnews: [],
-  });
-    const baseUrl = process.env.NEXT_PUBLIC_BE_BASE_URL || 'http://localhost:5010';
+  const baseUrl = process.env.NEXT_PUBLIC_BE_BASE_URL || "http://localhost:5010";
 
-  const fetchCategory = async (category, keyName) => {
+  // ✅ Fetch all categories first
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${baseUrl}/api/news/categories`);
+      if (response.status === 200 && Array.isArray(response.data.categories)) {
+        setCategories(response.data.categories);
+        return response.data.categories;
+      }
+      return [];
+    } catch (error) {
+      console.error("❌ Error fetching categories:", error.message);
+      return [];
+    }
+  };
+
+  // ✅ Fetch all news for each category
+  const fetchNewsByCategory = async (category) => {
     try {
       const response = await axios.get(`${baseUrl}/api/news/category/${category}`);
       if (response.status === 200 && Array.isArray(response.data.news)) {
-        setNewsData((prev) => ({
-          ...prev,
-          [keyName]: response.data.news.filter(
-            (item) => item.category?.toLowerCase() === category.toLowerCase()
-          ),
-        }));
+        return response.data.news.filter(
+          (item) => item.category?.toLowerCase() === category.toLowerCase()
+        );
       }
+      return [];
     } catch (error) {
       console.error(`❌ Error fetching ${category} news:`, error.message);
+      return [];
     }
   };
 
   useEffect(() => {
     const loadAll = async () => {
       setLoading(true);
-      await Promise.all([
-        fetchCategory("News", "news"),
-        fetchCategory("Fashion", "fashion"),
-        fetchCategory("Gadgets", "gadgets"),
-        fetchCategory("Lifestyle", "lifestyle"),
-        fetchCategory("TrendingNews", "trendingnews"),
-      ]);
+
+      // 1️⃣ Fetch all categories dynamically
+      const fetchedCategories = await fetchCategories();
+
+      // 2️⃣ Fetch all news for each category in parallel
+      const results = await Promise.all(
+        fetchedCategories.map((cat) => fetchNewsByCategory(cat))
+      );
+
+      // 3️⃣ Store results in an object like { News: [...], Fashion: [...] }
+      const categoryData = {};
+      fetchedCategories.forEach((cat, idx) => {
+        categoryData[cat] = results[idx];
+      });
+
+      setNewsData(categoryData);
       setLoading(false);
     };
+
     loadAll();
   }, []);
 
@@ -62,11 +82,17 @@ const Home = () => {
     setSelectedArticle(null);
   };
 
-  const sortedNews = [...newsData.news].sort(
+  // ✅ Find latest 5 articles across all categories for carousel
+  const allArticles = Object.values(newsData).flat();
+  const sortedNews = [...allArticles].sort(
     (a, b) => new Date(b.date) - new Date(a.date)
   );
 
-  // 🔹 Custom Loader (GSAYS Style)
+  const carouselNews = sortedNews.filter(
+  (article) => article.uploadedImage && article.uploadedImage.trim() !== ""
+);
+
+  // 🔹 Loader Component
   const Loader = () => (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
       <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-400 border-t-transparent"></div>
@@ -79,69 +105,36 @@ const Home = () => {
       <Navbar />
 
       {loading ? (
-        <Loader /> // 🔹 Show loader while API calls are in progress
+        <Loader />
       ) : (
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 py-8">
           {/* 🔹 Carousel for Latest News */}
-          {sortedNews.length > 0 && (
-            <NewsCarousel news={sortedNews.slice(0, 5)} onArticleClick={handleArticleClick} />
+          {carouselNews.length > 0 && (
+            <NewsCarousel news={carouselNews.slice(0, 5)} onArticleClick={handleArticleClick} />
           )}
 
-          {/* 🔹 News Sections */}
+          {/* 🔹 Dynamic News Sections */}
           <div className="px-2 space-y-12">
-            {newsData.news.length > 0 && (
-              <NewsSection
-                id="news"
-                title="News"
-                data={newsData.news}
-                onArticleClick={handleArticleClick}
-              />
-            )}
+            {categories.map((cat) => {
+  const validArticles = newsData[cat]?.filter(
+    (article) => article.uploadedImage && article.uploadedImage.trim() !== ""
+  );
 
-            {newsData.fashion.length > 0 && (
-              <NewsSection
-                id="fashion"
-                title="Fashion"
-                data={newsData.fashion}
-                onArticleClick={handleArticleClick}
-              />
-            )}
-
-            {newsData.gadgets.length > 0 && (
-              <NewsSection
-                id="gadgets"
-                title="Gadgets"
-                data={newsData.gadgets}
-                onArticleClick={handleArticleClick}
-              />
-            )}
-
-            {newsData.lifestyle.length > 0 && (
-              <NewsSection
-                id="lifestyle"
-                title="Lifestyle"
-                data={newsData.lifestyle}
-                onArticleClick={handleArticleClick}
-              />
-            )}
-
-            {newsData.trendingnews.length > 0 && (
-              <NewsSection
-                id="trendingnews"
-                title="Trending News"
-                data={newsData.trendingnews}
-                onArticleClick={handleArticleClick}
-              />
-            )}
+return validArticles?.length > 0 ? (
+    <NewsSection
+      key={cat}
+      id={cat.toLowerCase()}
+      title={cat}
+      data={validArticles} // ✅ only articles with uploadedImage
+      onArticleClick={handleArticleClick}
+    />
+  ) : null;
+})}
           </div>
         </div>
       )}
 
-      <ArticleModal
-        article={selectedArticle}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-      />
+      <ArticleModal article={selectedArticle} isOpen={isModalOpen} onClose={handleCloseModal} />
       <Footer />
     </div>
   );

@@ -6,7 +6,8 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
   if (!isOpen || !article) return null;
 
   return (
-    <div className="fixed inset-0 bg-white z-50 flex flex-col overflow-y-auto">
+  <div className="fixed top-0 left-0 w-full h-[100dvh] bg-white z-50 flex flex-col">
+
       {/* Close button */}
       <button
         onClick={onClose}
@@ -26,6 +27,9 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
           />
         </svg>
       </button>
+
+
+  <div className="flex-1 overflow-y-auto">
 
       {/* Top Image (Hero Section) */}
       <div className="relative w-full h-[70vh] md:h-[80vh] bg-gray-200">
@@ -93,6 +97,7 @@ const ArticleModal = ({ article, isOpen, onClose }) => {
         </div>
       </div>
     </div>
+  </div>
   );
 };
 

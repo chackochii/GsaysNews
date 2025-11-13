@@ -16,23 +16,54 @@ export default function AdminPage() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [articles, setArticles] = useState([]); // 🔹 List of news
-  const [editId, setEditId] = useState(null); // 🔹 Track edit mode
-  const baseUrl = process.env.NEXT_PUBLIC_BE_BASE_URL || 'http://localhost:5010';
+  const [articles, setArticles] = useState([]);
+  const [editId, setEditId] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [newCategory, setNewCategory] = useState('');
 
-  const categories = [
-    'News',
-    'Fashion',
-    'Gadgets',
-    'Lifestyle',
-    'Trending News',
-    'Advertisement',
-  ];
+  const baseUrl = process.env.NEXT_PUBLIC_BE_BASE_URL || 'http://13.201.131.134:5010';
 
-  // ✅ Fetch all news on mount
+  // ✅ Fetch all news
   useEffect(() => {
     fetchNews();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await axios.get(`${baseUrl}/api/news/categories`);
+      const list = res.data.categories || [];
+      setCategories(list);
+      // Set default category if available
+      if (list.length > 0 && !formData.category) {
+        setFormData((prev) => ({ ...prev, category: list[0] }));
+      }
+    } catch (error) {
+      console.error('❌ Failed to fetch categories:', error);
+      toast.error('Failed to load categories');
+    }
+  };
+
+
+   const handleAddCategory = async () => {
+    if (!newCategory.trim()) {
+      toast.error('Please enter a category name');
+      return;
+    }
+
+    try {
+      const res = await axios.post(`${baseUrl}/api/news/addCategory`, {
+        category: newCategory.trim(),
+      });
+
+      toast.success(res.data.message || '✅ Category added successfully');
+      setNewCategory('');
+      fetchCategories(); // refresh list
+    } catch (error) {
+      console.error('❌ Error adding category:', error);
+      toast.error(error?.response?.data?.error || 'Error adding category');
+    }
+  };
 
   const fetchNews = async () => {
     try {
@@ -43,6 +74,7 @@ export default function AdminPage() {
       toast.error('Failed to fetch articles');
     }
   };
+
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -70,7 +102,7 @@ export default function AdminPage() {
         : `${baseUrl}/api/news/create`;
 
       const method = editId ? 'put' : 'post';
-      const res = await axios[method](url, data, {
+      await axios[method](url, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
@@ -92,7 +124,6 @@ export default function AdminPage() {
     setEditId(null);
   };
 
-  // 🔹 When clicking "Edit" on a news item
   const handleEdit = (article) => {
     setFormData({
       category: article.category,
@@ -112,8 +143,8 @@ export default function AdminPage() {
       <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
 
       <main className="flex-grow max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
-        <h1 className="text-4xl font-extrabold text-blue-700 dark:text-blue-400 mb-10 text-center">
-          🚀 Admin Panel
+        <h1 className="text-4xl font-extrabold text-blue-700 dark:text-blue-400 mb-10">
+          Dashboard
         </h1>
 
         {/* ====== ADD / EDIT FORM ====== */}
@@ -125,21 +156,41 @@ export default function AdminPage() {
             {editId ? '✏️ Edit Article' : '📰 Add New Article'}
           </h2>
 
-          {/* Category */}
+          {/* Category Section */}
           <div>
             <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
               Category
             </label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="w-full border border-blue-400 dark:border-blue-600 bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-            >
-              {categories.map((cat) => (
-                <option key={cat}>{cat}</option>
-              ))}
-            </select>
+            <div className="flex gap-2 items-center">
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                className="flex-1 border border-blue-400 dark:border-blue-600 bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+              >
+                {categories.map((cat) => (
+                  <option key={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Add New Category */}
+            <div className="mt-3 flex gap-2">
+              <input
+                type="text"
+                placeholder="Add new category"
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                className="flex-1 border border-blue-400 dark:border-blue-600 bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                type="button"
+                onClick={handleAddCategory}
+                className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700"
+              >
+                ➕ Add
+              </button>
+            </div>
           </div>
 
           {/* Title */}
@@ -239,46 +290,49 @@ export default function AdminPage() {
           </button>
 
           {editId && (
-           <button
+            <button
               type="button"
               onClick={resetForm}
-              className={`mt-4 w-full sm:w-auto px-8 py-3 rounded-xl text-white bg-red-500 font-bold text-lg uppercase transition-all duration-300 transform flex items-center justify-center gap-2 hover:scale-105
-              `}
+              className="mt-4 w-full sm:w-auto px-8 py-3 rounded-xl text-white bg-red-500 font-bold text-lg uppercase transition-all duration-300 transform flex items-center justify-center gap-2 hover:scale-105"
             >
-              Cancel Editing <br></br>
+              Cancel Editing
             </button>
           )}
         </form>
 
-        {/* ====== MANAGE ARTICLES ====== */}
-        <div className="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700 mt-10">
-          <h3 className="text-xl font-bold text-blue-600 dark:text-blue-300 mb-4 border-b border-blue-200 dark:border-blue-700 pb-2">
-            🛠 Manage Articles
-          </h3>
+        {/* Manage Articles */}
 
-          {articles.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400 text-sm">No articles found.</p>
-          ) : (
-            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-              {articles.map((a) => (
-                <li key={a.id} className="py-3 flex justify-between items-center">
-                  <div>
-                    <p className="font-semibold text-gray-800 dark:text-gray-100">{a.title}</p>
-                    <p className="text-xs text-gray-500">
-                      {a.category} • {a.author} • {new Date(a.date).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleEdit(a)}
-                    className="text-blue-600 hover:text-blue-800 font-medium"
-                  >
-                    ✏️ Edit
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+<div className="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700 mt-10">
+  <h3 className="text-xl font-bold text-blue-600 dark:text-blue-300 mb-4 border-b border-blue-200 dark:border-blue-700 pb-2">
+    🛠 Manage Articles
+  </h3>
+
+  {articles.filter(a => a.uploadedImage && a.uploadedImage.trim() !== "").length === 0 ? (
+    <p className="text-gray-500 dark:text-gray-400 text-sm">No articles with images found.</p>
+  ) : (
+    <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+      {articles
+        .filter(a => a.uploadedImage && a.uploadedImage.trim() !== "")
+        .map((a) => (
+          <li key={a.id} className="py-3 flex justify-between items-center">
+            <div>
+              <p className="font-semibold text-gray-800 dark:text-gray-100">{a.title}</p>
+              <p className="text-xs text-gray-500">
+                {a.category} • {a.author} • {new Date(a.date).toLocaleDateString()}
+              </p>
+            </div>
+            <button
+              onClick={() => handleEdit(a)}
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              ✏️ Edit
+            </button>
+          </li>
+        ))}
+    </ul>
+  )}
+</div>
+
       </main>
 
       <Footer />
