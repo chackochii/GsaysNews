@@ -174,3 +174,23 @@ export const getCategories = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const deleteNews = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const existingNews = await NewsModel.findByPk(id);
+    if (!existingNews) {
+      return res.status(404).json({ error: "News article not found." });
+    }
+
+    await existingNews.destroy();
+
+    res.status(200).json({
+      message: "✅ News article deleted successfully.",
+    });
+  } catch (error) {
+    console.error("❌ Error deleting news:", error);
+    res.status(500).json({ error: error.message });
+  }
+};

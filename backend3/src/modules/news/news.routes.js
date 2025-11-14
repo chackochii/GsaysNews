@@ -1,5 +1,5 @@
 import express from 'express';
-import { createNews, listNewsByCategory, editNews, listNews,addCategory,getCategories } from '../news/news.contoller.js';
+import { createNews, listNewsByCategory, editNews, listNews,addCategory,getCategories , deleteNews } from '../news/news.contoller.js';
 import { upload } from '../../config/s3.config.js';
 
 const router = express.Router();
@@ -10,6 +10,7 @@ router.get('/category/:category', listNewsByCategory);
 router.put('/edit/:id', upload.single('image'), editNews);
 router.post('/addCategory', addCategory);
 router.get('/categories', getCategories);
+router.delete('/delete/:id', deleteNews);
 
 
 export default router;

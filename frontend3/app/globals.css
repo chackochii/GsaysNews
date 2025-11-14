@@ -29,3 +29,7 @@ body {
   line-clamp: 2;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+

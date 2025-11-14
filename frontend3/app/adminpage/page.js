@@ -20,6 +20,9 @@ export default function AdminPage() {
   const [editId, setEditId] = useState(null);
   const [categories, setCategories] = useState([]);
   const [newCategory, setNewCategory] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+
 
   const baseUrl = process.env.NEXT_PUBLIC_BE_BASE_URL || 'http://13.201.131.134:5010';
 
@@ -106,7 +109,7 @@ export default function AdminPage() {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      toast.success(editId ? '✅ Article updated successfully!' : '✅ Article added!');
+      toast.success(editId ? 'Article updated successfully!' : 'Article added!');
       resetForm();
       fetchNews();
     } catch (error) {
@@ -136,6 +139,32 @@ export default function AdminPage() {
     setEditId(article.id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+const openDeleteModal = (id) => {
+  setDeleteId(id);
+  setShowDeleteModal(true);
+};
+
+const confirmDelete = async () => {
+  try {
+    await axios.delete(`${baseUrl}/api/news/delete/${deleteId}`);
+    toast.success("🗑️ Article deleted successfully!");
+    fetchNews();
+  } catch (error) {
+    console.error(error);
+    toast.error("❌ Failed to delete article");
+  } finally {
+    setShowDeleteModal(false);
+    setDeleteId(null);
+  }
+};
+
+const cancelDelete = () => {
+  setShowDeleteModal(false);
+  setDeleteId(null);
+};
+
+
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -310,30 +339,71 @@ export default function AdminPage() {
   {articles.filter(a => a.uploadedImage && a.uploadedImage.trim() !== "").length === 0 ? (
     <p className="text-gray-500 dark:text-gray-400 text-sm">No articles with images found.</p>
   ) : (
-    <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-      {articles
-        .filter(a => a.uploadedImage && a.uploadedImage.trim() !== "")
-        .map((a) => (
-          <li key={a.id} className="py-3 flex justify-between items-center">
-            <div>
-              <p className="font-semibold text-gray-800 dark:text-gray-100">{a.title}</p>
-              <p className="text-xs text-gray-500">
-                {a.category} • {a.author} • {new Date(a.date).toLocaleDateString()}
-              </p>
-            </div>
-            <button
-              onClick={() => handleEdit(a)}
-              className="text-blue-600 hover:text-blue-800 font-medium"
-            >
-              ✏️ Edit
-            </button>
-          </li>
-        ))}
-    </ul>
+<ul className="divide-y divide-gray-200 dark:divide-gray-700">
+  {articles
+    .filter(a => a.uploadedImage && a.uploadedImage.trim() !== "")
+    .map((a) => (
+      <li key={a.id} className="py-4 flex justify-between items-center">
+        <div>
+          <p className="font-semibold text-gray-800 dark:text-gray-100">{a.title}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            {a.category} • {a.author} • {new Date(a.date).toLocaleDateString()}
+          </p>
+        </div>
+
+        {/* Edit + Delete Group */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => handleEdit(a)}
+            className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+          >
+            ✏️ Edit
+          </button>
+
+          <button onClick={() => openDeleteModal(a.id)} className="text-red-600 hover:text-red-800 font-medium flex items-center gap-1">
+  🗑️ Delete
+</button>
+        </div>
+      </li>
+    ))}
+</ul>
+
+
   )}
 </div>
 
       </main>
+
+      {showDeleteModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-80 p-6 text-center">
+      <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">
+        Confirm Delete
+      </h2>
+
+      <p className="text-gray-600 dark:text-gray-300 mb-6">
+        Are you sure you want to delete this article?
+      </p>
+
+      <div className="flex justify-center gap-4">
+        <button
+          onClick={cancelDelete}
+          className="px-4 py-2 rounded-lg bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-100 font-medium hover:bg-gray-400 dark:hover:bg-gray-500"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={confirmDelete}
+          className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
       <Footer />
     </div>
