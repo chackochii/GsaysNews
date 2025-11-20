@@ -23,10 +23,11 @@ export default function AdminPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
+  // validation errors for input fields only (not file)
+  const [errors, setErrors] = useState({});
 
   const baseUrl = process.env.NEXT_PUBLIC_BE_BASE_URL || 'http://13.201.131.134:5010';
 
-  // ✅ Fetch all news
   useEffect(() => {
     fetchNews();
     fetchCategories();
@@ -37,7 +38,6 @@ export default function AdminPage() {
       const res = await axios.get(`${baseUrl}/api/news/categories`);
       const list = res.data.categories || [];
       setCategories(list);
-      // Set default category if available
       if (list.length > 0 && !formData.category) {
         setFormData((prev) => ({ ...prev, category: list[0] }));
       }
@@ -47,8 +47,7 @@ export default function AdminPage() {
     }
   };
 
-
-   const handleAddCategory = async () => {
+  const handleAddCategory = async () => {
     if (!newCategory.trim()) {
       toast.error('Please enter a category name');
       return;
@@ -78,8 +77,12 @@ export default function AdminPage() {
     }
   };
 
-
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  // handle input changes and clear that field's error if any
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -87,8 +90,25 @@ export default function AdminPage() {
     setPreview(file ? URL.createObjectURL(file) : null);
   };
 
+  const validateFields = () => {
+    const newErrors = {};
+    if (!formData.title.trim()) newErrors.title = 'Title is required';
+    if (!formData.author.trim()) newErrors.author = 'Author is required';
+    if (!formData.date) newErrors.date = 'Date is required';
+    if (!formData.article.trim()) newErrors.article = 'Article content is required';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateFields()) {
+      toast.error('Please fill all required fields');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -100,11 +120,9 @@ export default function AdminPage() {
       data.append('article', formData.article);
       if (selectedFile) data.append('image', selectedFile);
 
-      const url = editId
-        ? `${baseUrl}/api/news/edit/${editId}`
-        : `${baseUrl}/api/news/create`;
-
+      const url = editId ? `${baseUrl}/api/news/edit/${editId}` : `${baseUrl}/api/news/create`;
       const method = editId ? 'put' : 'post';
+
       await axios[method](url, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
@@ -125,6 +143,7 @@ export default function AdminPage() {
     setSelectedFile(null);
     setPreview(null);
     setEditId(null);
+    setErrors({});
   };
 
   const handleEdit = (article) => {
@@ -137,34 +156,33 @@ export default function AdminPage() {
     });
     setPreview(article.imageUrl || null);
     setEditId(article.id);
+    setErrors({});
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-const openDeleteModal = (id) => {
-  setDeleteId(id);
-  setShowDeleteModal(true);
-};
+  const openDeleteModal = (id) => {
+    setDeleteId(id);
+    setShowDeleteModal(true);
+  };
 
-const confirmDelete = async () => {
-  try {
-    await axios.delete(`${baseUrl}/api/news/delete/${deleteId}`);
-    toast.success("🗑️ Article deleted successfully!");
-    fetchNews();
-  } catch (error) {
-    console.error(error);
-    toast.error("❌ Failed to delete article");
-  } finally {
+  const confirmDelete = async () => {
+    try {
+      await axios.delete(`${baseUrl}/api/news/delete/${deleteId}`);
+      toast.success('🗑️ Article deleted successfully!');
+      fetchNews();
+    } catch (error) {
+      console.error(error);
+      toast.error('❌ Failed to delete article');
+    } finally {
+      setShowDeleteModal(false);
+      setDeleteId(null);
+    }
+  };
+
+  const cancelDelete = () => {
     setShowDeleteModal(false);
     setDeleteId(null);
-  }
-};
-
-const cancelDelete = () => {
-  setShowDeleteModal(false);
-  setDeleteId(null);
-};
-
-
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -201,24 +219,24 @@ const cancelDelete = () => {
                   <option key={cat}>{cat}</option>
                 ))}
               </select>
-            </div>
 
-            {/* Add New Category */}
-            <div className="mt-3 flex gap-2">
-              <input
-                type="text"
-                placeholder="Add new category"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                className="flex-1 border border-blue-400 dark:border-blue-600 bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                type="button"
-                onClick={handleAddCategory}
-                className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700"
-              >
-                ➕ Add
-              </button>
+              {/* Add Category input + button (present as requested) */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Add new category"
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  className="ml-3 border border-blue-400 dark:border-blue-600 bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddCategory}
+                  className="px-3 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700"
+                >
+                  ➕ Add
+                </button>
+              </div>
             </div>
           </div>
 
@@ -232,9 +250,13 @@ const cancelDelete = () => {
               value={formData.title}
               onChange={handleChange}
               placeholder="Enter article title"
-              className="w-full border border-blue-400 dark:border-blue-600 bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-              required
+              className={`w-full bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 ${
+                errors.title
+                  ? 'border-2 border-red-500'
+                  : 'border border-blue-400 dark:border-blue-600'
+              }`}
             />
+            {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
           </div>
 
           {/* Author & Date */}
@@ -248,9 +270,13 @@ const cancelDelete = () => {
                 value={formData.author}
                 onChange={handleChange}
                 placeholder="Author name"
-                className="w-full border border-blue-400 dark:border-blue-600 bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-                required
+                className={`w-full bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 ${
+                  errors.author
+                    ? 'border-2 border-red-500'
+                    : 'border border-blue-400 dark:border-blue-600'
+                }`}
               />
+              {errors.author && <p className="text-red-500 text-sm mt-1">{errors.author}</p>}
             </div>
             <div>
               <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
@@ -261,9 +287,13 @@ const cancelDelete = () => {
                 name="date"
                 value={formData.date}
                 onChange={handleChange}
-                className="w-full border border-blue-400 dark:border-blue-600 bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-                required
+                className={`w-full bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 ${
+                  errors.date
+                    ? 'border-2 border-red-500'
+                    : 'border border-blue-400 dark:border-blue-600'
+                }`}
               />
+              {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
             </div>
           </div>
 
@@ -278,22 +308,42 @@ const cancelDelete = () => {
               onChange={handleChange}
               rows="6"
               placeholder="Write full article..."
-              className="w-full border border-blue-400 dark:border-blue-600 bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 resize-none"
-              required
+              className={`w-full bg-blue-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 resize-none ${
+                errors.article
+                  ? 'border-2 border-red-500'
+                  : 'border border-blue-400 dark:border-blue-600'
+              }`}
             />
+            {errors.article && <p className="text-red-500 text-sm mt-1">{errors.article}</p>}
           </div>
 
-          {/* Image Upload */}
+          {/* Image Upload - NO red-border validation for this */}
           <div>
             <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
               Upload Image
             </label>
+
+            {/* Styled file input + custom label to look like a button */}
+            <div className="flex items-center gap-3">
+              <label
+                htmlFor="imageUpload"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700"
+              >
+                📁 Choose Image
+              </label>
+              <span className="text-sm text-gray-500 dark:text-gray-300">
+                {selectedFile ? selectedFile.name : 'No file selected'}
+              </span>
+            </div>
+
             <input
+              id="imageUpload"
               type="file"
               accept="image/*"
               onChange={handleFileChange}
-              className="block w-full text-sm text-gray-700 dark:text-gray-300 border border-blue-400 dark:border-blue-600 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:bg-blue-100 dark:file:bg-blue-800 file:text-blue-700 dark:file:text-blue-100 hover:file:bg-blue-200 dark:hover:file:bg-blue-700"
+              className="hidden"
             />
+
             {preview && (
               <div className="mt-4 p-2 bg-blue-50 dark:bg-gray-700 rounded-lg border border-blue-200 dark:border-gray-600">
                 <img
@@ -306,104 +356,98 @@ const cancelDelete = () => {
           </div>
 
           {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading || !formData.title || !formData.article}
-            className={`mt-4 w-full sm:w-auto px-8 py-3 rounded-xl text-white font-bold text-lg uppercase transition-all duration-300 transform flex items-center justify-center gap-2 ${
-              loading
-                ? 'bg-blue-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-blue-600 to-indigo-700 hover:scale-105'
-            }`}
-          >
-            {loading ? 'Saving...' : editId ? 'Update Article' : 'Submit Article'}
-          </button>
-
-          {editId && (
+          <div className="flex flex-col sm:flex-row gap-3 items-center">
             <button
-              type="button"
-              onClick={resetForm}
-              className="mt-4 w-full sm:w-auto px-8 py-3 rounded-xl text-white bg-red-500 font-bold text-lg uppercase transition-all duration-300 transform flex items-center justify-center gap-2 hover:scale-105"
+              type="submit"
+              disabled={loading}
+              className={`mt-4 px-8 py-3 rounded-xl text-white font-bold text-lg uppercase transition-all duration-300 transform flex items-center justify-center gap-2 ${
+                loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-indigo-700 hover:scale-105'
+              }`}
             >
-              Cancel Editing
+              {loading ? 'Saving...' : editId ? 'Update Article' : 'Submit Article'}
             </button>
-          )}
+
+            {editId && (
+              <button
+                type="button"
+                onClick={resetForm}
+                className="mt-4 px-8 py-3 rounded-xl text-white bg-red-500 font-bold text-lg uppercase transition-all duration-300 transform hover:scale-105"
+              >
+                Cancel Editing
+              </button>
+            )}
+          </div>
         </form>
 
         {/* Manage Articles */}
+        <div className="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700 mt-10">
+          <h3 className="text-xl font-bold text-blue-600 dark:text-blue-300 mb-4 border-b border-blue-200 dark:border-blue-700 pb-2">
+            🛠 Manage Articles
+          </h3>
 
-<div className="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700 mt-10">
-  <h3 className="text-xl font-bold text-blue-600 dark:text-blue-300 mb-4 border-b border-blue-200 dark:border-blue-700 pb-2">
-    🛠 Manage Articles
-  </h3>
+          {articles.filter((a) => a.uploadedImage && a.uploadedImage.trim() !== '').length === 0 ? (
+            <p className="text-gray-500 dark:text-gray-400 text-sm">No articles with images found.</p>
+          ) : (
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+              {articles
+                .filter((a) => a.uploadedImage && a.uploadedImage.trim() !== '')
+                .map((a) => (
+                  <li key={a.id} className="py-4 flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold text-gray-800 dark:text-gray-100">{a.title}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {a.category} • {a.author} • {new Date(a.date).toLocaleDateString()}
+                      </p>
+                    </div>
 
-  {articles.filter(a => a.uploadedImage && a.uploadedImage.trim() !== "").length === 0 ? (
-    <p className="text-gray-500 dark:text-gray-400 text-sm">No articles with images found.</p>
-  ) : (
-<ul className="divide-y divide-gray-200 dark:divide-gray-700">
-  {articles
-    .filter(a => a.uploadedImage && a.uploadedImage.trim() !== "")
-    .map((a) => (
-      <li key={a.id} className="py-4 flex justify-between items-center">
-        <div>
-          <p className="font-semibold text-gray-800 dark:text-gray-100">{a.title}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            {a.category} • {a.author} • {new Date(a.date).toLocaleDateString()}
-          </p>
+                    {/* Edit + Delete Group */}
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={() => handleEdit(a)}
+                        className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+                      >
+                        ✏️ Edit
+                      </button>
+
+                      <button
+                        onClick={() => openDeleteModal(a.id)}
+                        className="text-red-600 hover:text-red-800 font-medium flex items-center gap-1"
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  </li>
+                ))}
+            </ul>
+          )}
         </div>
-
-        {/* Edit + Delete Group */}
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => handleEdit(a)}
-            className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
-          >
-            ✏️ Edit
-          </button>
-
-          <button onClick={() => openDeleteModal(a.id)} className="text-red-600 hover:text-red-800 font-medium flex items-center gap-1">
-  🗑️ Delete
-</button>
-        </div>
-      </li>
-    ))}
-</ul>
-
-
-  )}
-</div>
-
       </main>
 
       {showDeleteModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-80 p-6 text-center">
-      <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">
-        Confirm Delete
-      </h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-80 p-6 text-center">
+            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Confirm Delete</h2>
 
-      <p className="text-gray-600 dark:text-gray-300 mb-6">
-        Are you sure you want to delete this article?
-      </p>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">Are you sure you want to delete this article?</p>
 
-      <div className="flex justify-center gap-4">
-        <button
-          onClick={cancelDelete}
-          className="px-4 py-2 rounded-lg bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-100 font-medium hover:bg-gray-400 dark:hover:bg-gray-500"
-        >
-          Cancel
-        </button>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 rounded-lg bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-100 font-medium hover:bg-gray-400 dark:hover:bg-gray-500"
+              >
+                Cancel
+              </button>
 
-        <button
-          onClick={confirmDelete}
-          className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700"
-        >
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>
