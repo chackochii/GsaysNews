@@ -71,7 +71,7 @@ category: category || existingNews.category,
 title: title || existingNews.title,
 author: author || existingNews.author,
 date: date || existingNews.date,
-article: article || existingNews.article,
+articleContent: article || existingNews.articleContent,
 };
 
 if (image) {
