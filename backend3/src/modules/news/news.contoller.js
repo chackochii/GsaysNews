@@ -195,3 +195,31 @@ console.error("❌ Error deleting news:", error);
 res.status(500).json({ error: error.message });
 }
 };
+
+
+
+
+export const listOneNews = async (req, res) => {
+  try {
+    const oneMonthAgo = moment().subtract(1, "month").toDate();
+    const today = moment().endOf("day").toDate();
+
+    const newsList = await NewsModel.findAll({
+      where: {
+        id: req.params.id,
+        createdAt: {
+          [Op.between]: [oneMonthAgo, today],
+        },
+      },
+      order: [["createdAt", "DESC"]], // latest first
+    });
+
+    res.status(200).json({
+      message: "News for Last 1 Month",
+      news: newsList,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching news:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
