@@ -7,6 +7,9 @@ export const createNews = async (req, res) => {
     const { author, date, category, title, article } = req.body;
 
     const uploadedImage = req.file?.gcsUrl || null;
+    if(!uploadedImage){
+      res.status(500).json({ error: error.message });
+    }
 
     const news = await NewsModel.create({
       author,
