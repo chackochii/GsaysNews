@@ -11,7 +11,7 @@ dotenv.config();
 const storage = new Storage();
 
 // Your GCS bucket name
-const bucketName = process.env.GCS_BUCKET_NAME || "gsaysbucket";
+const bucketName = process.env.GCS_BUCKET_NAME || "gsaybucket";
 const bucket = storage.bucket(bucketName);
 
 // Multer memory storage (file kept in memory before upload)
