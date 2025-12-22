@@ -49,15 +49,20 @@ const uploadToGCS = async (req, res, next) => {
   });
 
   blobStream.on("finish", async () => {
-    // Make file public (optional)
+  // Assign GCS URL
+  req.file.gcsUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
+  req.file.gcsPath = fileName;
+
+  // Optional: try to make public, but don't crash on failure
+  try {
     await blob.makePublic();
+  } catch (err) {
+    console.warn("Could not make file public:", err.message);
+  }
 
-    // Public URL
-    req.file.gcsUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
-    req.file.gcsPath = fileName;
+  next();
+});
 
-    next();
-  });
 
   blobStream.end(req.file.buffer);
 };
