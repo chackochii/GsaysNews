@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const storage = new Storage();
-const bucketName = process.env.GCS_BUCKET_NAME || "gsaybucket";
+const bucketName = process.env.GCS_BUCKET_NAME || "gsays-bucket";
 const bucket = storage.bucket(bucketName);
 
 const multerUpload = multer({
