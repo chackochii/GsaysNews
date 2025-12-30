@@ -11,3 +11,6 @@ router.put('/edit/:id', upload.single('image'), editNews);
 router.post('/addCategory', addCategory);
 router.get('/categories', getCategories);
 router.delete('/delete/:id', deleteNews);
+
+
+export default router;
