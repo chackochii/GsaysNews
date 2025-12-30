@@ -65,13 +65,13 @@ if (!existingNews) {
 return res.status(404).json({ error: "News article not found." });
 }
 
-const updatedData = {
-category: category  existingNews.category,
-title: title  existingNews.title,
-author: author  existingNews.author,
-date: date  existingNews.date,
-articleContent: article  existingNews.articleContent,
-};
+  const updatedData = {
+      category: category || existingNews.category,
+      title: title || existingNews.title,
+      author: author || existingNews.author,
+      date: date || existingNews.date,
+      articleContent: article || existingNews.articleContent,
+    };
 
 if (image) {
 updatedData.imageUrl = image.location  /uploads/${image.filename};
