@@ -1,4 +1,3 @@
-/ config/s3.config.js
 import multer from 'multer';
 import multerS3 from 'multer-s3';
 import { S3Client } from '@aws-sdk/client-s3';
@@ -23,7 +22,7 @@ export const upload = multer({
     contentType: multerS3.AUTO_CONTENT_TYPE, // ✅ automatically sets correct MIME type (fixes download issue)
     key: (req, file, cb) => {
       // create a unique name (optional: group in a folder like "news/")
-      const fileName = news/${Date.now()}-${file.originalname};
+      const fileName = `news/${Date.now()}-${file.originalname}`;
       cb(null, fileName);
     },
   }),
