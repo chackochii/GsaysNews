@@ -27,32 +27,31 @@ res.status(500).json({ error: error.message });
 }
 };
 
-
 export const listNewsByCategory = async (req, res) => {
-try {
-const { category } = req.params;
+  try {
+    const { category } = req.params;
 
-const oneMonthAgo = moment().subtract(1, "month").toDate();
-const today = moment().endOf("day").toDate();
+    const oneMonthAgo = moment().subtract(1, "month").toDate();
+    const today = moment().endOf("day").toDate();
 
-const newsList = await NewsModel.findAll({
-where: {
-category,
-date: {
-[Op.between]: [oneMonthAgo, today],
-},
-},
-order: [["date", "DESC"]],
-});
+    const newsList = await NewsModel.findAll({
+      where: {
+        category,
+        date: {
+          [Op.between]: [oneMonthAgo, today],
+        },
+      },
+      order: [["date", "DESC"]],
+    });
 
-res.status(200).json({
-message: News for category: ${category} (Last 1 Month),
-news: newsList,
-});
-} catch (error) {
-console.error("❌ Error fetching news by category:", error);
-res.status(500).json({ error: error.message });
-}
+    res.status(200).json({
+      message: `News for category: ${category} (Last 1 Month)`,
+      news: newsList,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching news by category:", error);
+    res.status(500).json({ error: error.message });
+  }
 };
 
 export const editNews = async (req, res) => {
