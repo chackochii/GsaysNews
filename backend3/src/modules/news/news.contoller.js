@@ -73,9 +73,9 @@ return res.status(404).json({ error: "News article not found." });
       articleContent: article || existingNews.articleContent,
     };
 
-if (image) {
-updatedData.imageUrl = image.location  /uploads/${image.filename};
-}
+ if (image) {
+      updatedData.imageUrl = image.location || `/uploads/${image.filename}`;
+    }
 
 // Update record
 await existingNews.update(updatedData);
