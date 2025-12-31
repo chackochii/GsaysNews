@@ -3,29 +3,37 @@ import { Op } from "sequelize";
 import moment from "moment";
 
 export const createNews = async (req, res) => {
-try {
-const { author, date, category, title, article } = req.body;
+  try {
+    const { author, date, category, title, article } = req.body;
 
-const uploadedImage = req.file ? req.file.location : null;
+    let imageKey = null;
+    let imageUrl = null;
 
-const news = await NewsModel.create({
-author,
-date,
-category,
-title,
-articleContent: article,
-uploadedImage,
-});
+    if (req.file) {
+      imageKey = req.file.key;
+      imageUrl = getPublicImageUrl(imageKey);
+    }
 
-res.status(201).json({
-message: 'News created successfully',
-news,
-});
-} catch (error) {
-console.error('Error creating news:', error);
-res.status(500).json({ error: error.message });
-}
+    const news = await NewsModel.create({
+      author,
+      date,
+      category,
+      title,
+      articleContent: article,
+      imageKey,        // store key
+      uploadedImage: imageUrl, // public URL
+    });
+
+    res.status(201).json({
+      message: 'News created successfully',
+      news,
+    });
+  } catch (error) {
+    console.error('Error creating news:', error);
+    res.status(500).json({ error: error.message });
+  }
 };
+
 
 export const listNewsByCategory = async (req, res) => {
   try {
@@ -55,40 +63,47 @@ export const listNewsByCategory = async (req, res) => {
 };
 
 export const editNews = async (req, res) => {
-try {
-const { id } = req.params;
-const { category, title, author, date, article } = req.body;
-const image = req.file;
+  try {
+    const { id } = req.params;
+    const { author, date, category, title, article } = req.body;
 
-const existingNews = await NewsModel.findByPk(id);
-if (!existingNews) {
-return res.status(404).json({ error: "News article not found." });
-}
+    const news = await NewsModel.findById(id);
 
-  const updatedData = {
-      category: category || existingNews.category,
-      title: title || existingNews.title,
-      author: author || existingNews.author,
-      date: date || existingNews.date,
-      articleContent: article || existingNews.articleContent,
-    };
-
- if (image) {
-      updatedData.imageUrl = image.location || `/uploads/${image.filename}`;
+    if (!news) {
+      return res.status(404).json({ message: 'News not found' });
     }
 
-// Update record
-await existingNews.update(updatedData);
+    // Update basic fields
+    news.author = author ?? news.author;
+    news.date = date ?? news.date;
+    news.category = category ?? news.category;
+    news.title = title ?? news.title;
+    news.articleContent = article ?? news.articleContent;
 
-res.status(200).json({
-message: "✅ News article updated successfully.",
-news: existingNews,
-});
-} catch (error) {
-console.error("❌ Error updating news:", error);
-res.status(500).json({ error: error.message });
-}
+    // If new image uploaded, replace image
+    if (req.file) {
+      const imageKey = req.file.key;
+      const imageUrl = getPublicImageUrl(imageKey);
+
+      // Optional: delete old image from Spaces here
+      // (recommended but not mandatory)
+
+      news.imageKey = imageKey;
+      news.uploadedImage = imageUrl;
+    }
+
+    await news.save();
+
+    res.status(200).json({
+      message: 'News updated successfully',
+      news,
+    });
+  } catch (error) {
+    console.error('Error editing news:', error);
+    res.status(500).json({ error: error.message });
+  }
 };
+
 
 
 export const listNews = async (req, res) => {
@@ -221,3 +236,8 @@ export const listOneNews = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+const getPublicImageUrl = (key) => {
+  return `https://${process.env.DO_SPACES_BUCKET}.${process.env.DO_SPACES_REGION}.cdn.digitaloceanspaces.com/${key}`;
+};
+
