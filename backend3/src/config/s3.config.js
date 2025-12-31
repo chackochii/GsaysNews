@@ -80,6 +80,8 @@ export const upload = multer({
  * -----------------------------
  * Use this when saving image URL to DB
  */
-export const getPublicImageUrl = (key: string): string => {
+// JavaScript version
+export const getPublicImageUrl = (key) => {
   return `https://${process.env.DO_SPACES_BUCKET}.${process.env.DO_SPACES_REGION}.cdn.digitaloceanspaces.com/${key}`;
 };
+
