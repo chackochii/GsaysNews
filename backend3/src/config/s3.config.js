@@ -16,8 +16,8 @@ const s3 = new S3Client({
   region: process.env.DO_SPACES_REGION, // sgp1
   endpoint: `https://${process.env.DO_SPACES_REGION}.digitaloceanspaces.com`,
   credentials: {
-    accessKeyId: process.env.DO_SPACES_KEY!,
-    secretAccessKey: process.env.DO_SPACES_SECRET!,
+    accessKeyId: process.env.DO_SPACES_KEY,
+    secretAccessKey: process.env.DO_SPACES_SECRET,
   },
 });
 
@@ -29,7 +29,7 @@ const s3 = new S3Client({
 export const upload = multer({
   storage: multerS3({
     s3,
-    bucket: process.env.DO_SPACES_BUCKET!, // gsaysbucket-images
+    bucket: process.env.DO_SPACES_BUCKET, // gsaysbucket-images
 
     // Make images publicly viewable
     acl: 'public-read',
