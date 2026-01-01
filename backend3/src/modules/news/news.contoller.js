@@ -67,7 +67,7 @@ export const editNews = async (req, res) => {
     const { id } = req.params;
     const { author, date, category, title, article } = req.body;
 
-    const news = await NewsModel.findById(id);
+   const news = await NewsModel.findByPk(id);
 
     if (!news) {
       return res.status(404).json({ message: 'News not found' });
