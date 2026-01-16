@@ -17,11 +17,7 @@ const Admin = sequelize.define(
     joined: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
-    },
-    otherInfo: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
+    }
   },
   {
     tableName: 'Admin',        // ✅ EXACT table name
