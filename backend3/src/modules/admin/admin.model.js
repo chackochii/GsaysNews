@@ -22,7 +22,7 @@ const Admin = sequelize.define(
   {
     tableName: 'Admin',        // ✅ EXACT table name
     freezeTableName: true,     // ✅ stop pluralization
-    timestamps: true           // optional, but recommended
+    timestamps: false           // optional, but recommended
   }
 );
 
