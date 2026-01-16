@@ -1,0 +1,6 @@
+# public/robots.txt
+User-agent: *
+Disallow: /api/
+Disallow: /virtuals/
+Allow: /
+Sitemap: https://www.guruvayoorsay.com/sitemap.xml
